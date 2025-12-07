@@ -83,7 +83,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="container mt-5" style={{ marginTop: "10rem" }}>
+    <div className="container" style={{ marginTop: "5rem" }}>
       <div className="row justify-content-center">
         <div className="col-md-6">
           <div className="card shadow-lg">

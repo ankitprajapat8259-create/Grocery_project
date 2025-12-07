@@ -51,6 +51,7 @@ const DairyProduct = () => {
                 src={item.image}
                 style={{ height: "300px", objectFit: "cover" }}
                 className="card-img-top"
+                loading="lazy"
                 whileHover={{ scale: 1.08 }}
               />
 

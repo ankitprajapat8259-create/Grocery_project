@@ -127,6 +127,7 @@ const downloadInvoice = () => {
                 src={item.image || item.img}
                 className="card-img-top"
                 alt={item.name}
+                loading="lazy"
                 style={{ height: "180px", objectFit: "cover" }}
               />
 

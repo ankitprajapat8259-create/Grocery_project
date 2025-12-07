@@ -50,6 +50,7 @@ const Fruits = () => {
               <motion.img
                 src={item.image}
                 className="card-img-top"
+                loading="lazy"
                 whileHover={{ scale: 1.08 }}
               />
 

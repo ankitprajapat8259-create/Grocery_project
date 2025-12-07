@@ -51,6 +51,7 @@ const Home = () => {
         <img
           src={sliderImages[currentSlide]}
           alt="slider"
+          loading="eager"
           style={{
             width: "100%",
             height: "300px",
@@ -78,6 +79,7 @@ const Home = () => {
                 src={item.image}
                 alt={item.name}
                 className="card-img-top"
+                loading="lazy"
                 whileHover={{ scale: 1.08 }}
                 transition={{ duration: 0.3 }}
               />
