@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 function Login() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -10,22 +12,59 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:8000/api/login/", {
+      const res = await axios.post("http://127.0.0.1:8000/api/login/", {
         username,
         password,
       });
 
-      // API Response
-      console.log("Login Response:", res.data);
+      // API Response - Debugging
+      console.log("=== LOGIN RESPONSE DEBUG ===");
+      console.log("Full Response Object:", res);
+      console.log("Response Data:", res.data);
+      console.log("Response Status:", res.status);
+      console.log("All Response Keys:", Object.keys(res.data || {}));
+      
+      // Token Save in localStorage - Django REST Framework format
+      // Response has 'access' and 'refresh' tokens
+      const accessToken = res.data?.access || 
+                          res.data?.accessToken || 
+                          res.data?.access_token || 
+                          res.data?.token || 
+                          res.data?.authToken ||
+                          res.data?.data?.access ||
+                          res.data?.data?.accessToken ||
+                          res.data?.data?.token;
 
-      // Token Save in localStorage
-      localStorage.setItem("token", res.data.accessToken);
-
-      // Redirect to Home
-      window.location.href = "/";
+      if (accessToken) {
+        // Save access token (main token for API calls)
+        localStorage.setItem("token", accessToken);
+        
+        // Optionally save refresh token for token refresh functionality
+        if (res.data?.refresh) {
+          localStorage.setItem("refreshToken", res.data.refresh);
+        }
+        
+        // Redirect to Profile
+        navigate("/");
+      } else {
+        setError("Token not found in response. Check console for details.");
+        console.error("❌ TOKEN NOT FOUND - Full response structure:");
+        console.error(JSON.stringify(res.data, null, 2));
+      }
     } catch (err) {
-      setError("Invalid Credentials!");
-      console.error(err);
+      if (err.response) {
+        // Server responded with error status
+        console.error("Error Response:", err.response.data);
+        setError(err.response.data?.message || err.response.data?.error || "Invalid Credentials!");
+      } else if (err.request) {
+        // Request was made but no response received
+        console.error("No Response:", err.request);
+        setError("No response from server. Please check if backend is running.");
+      } else {
+        // Something else happened
+        console.error("Error:", err.message);
+        setError("An error occurred. Please try again.");
+      }
     }
   };
 
@@ -63,7 +102,7 @@ function Login() {
             Login
           </button>
           <p className="text-center mt-3">
-            Don't have an account? <a href="/register">Register</a>
+            Don't have an account? <Link to="/register">Register</Link>
           </p>
         </form>
       </div>

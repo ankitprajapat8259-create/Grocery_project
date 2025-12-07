@@ -20,11 +20,13 @@ const Home = () => {
   usePreloadImages(sliderImages);
 
   useEffect(() => {
+    if (!sliderImages || sliderImages.length === 0) return;
+    
     const interval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % sliderImages.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [sliderImages.length]);
 
   const updateWeight = (id, weight) => {
     setProducts(prev =>
@@ -36,7 +38,7 @@ const Home = () => {
           "500g": 0.5,
           "1kg": 1,
           "2kg": 2
-        }[weight];
+        }[weight] || 1; // Default to 1 if weight is invalid
 
         return { ...item, weight, price: item.basePrice * multiplier };
       })
@@ -82,7 +84,7 @@ const Home = () => {
 
               <div className="card-body">
                 <h5>{item.name}</h5>
-                <p className="fw-bold">₹ {item.price}</p>
+                <p className="fw-bold">₹ {item.price.toFixed(2)}</p>
 
                 <select
                   className="form-control mb-2"

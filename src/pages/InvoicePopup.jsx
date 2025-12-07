@@ -21,15 +21,15 @@ const InvoicePopup = () => {
         i.name,
         i.weight,
         i.quantity,
-        `₹${i.price}`,
-        `₹${i.price * i.quantity}`,
+        `₹${i.price.toFixed(2)}`,
+        `₹${(i.price * i.quantity).toFixed(2)}`,
       ]),
     });
 
     const y = doc.lastAutoTable.finalY + 10;
     const gst = invoiceData.subtotal * invoiceData.gstRate;
 
-    doc.text(`Subtotal: ₹${invoiceData.subtotal}`, 14, y);
+    doc.text(`Subtotal: ₹${invoiceData.subtotal.toFixed(2)}`, 14, y);
     doc.text(`GST (5%): ₹${gst.toFixed(2)}`, 14, y + 10);
     doc.text(`Grand Total: ₹${(invoiceData.subtotal + gst).toFixed(2)}`, 14, y + 20);
 
@@ -47,9 +47,9 @@ const InvoicePopup = () => {
         <div className="invoice-scroll-area">
           {invoiceData.items.map((item, idx) => (
             <div key={idx} className="invoice-item-row">
-              <img src={item.img} alt={item.name} className="invoice-img" />
+              <img src={item.img || item.image || ""} alt={item.name} className="invoice-img" />
               <span>{item.name} ({item.weight}) × {item.quantity}</span>
-              <span>₹{item.price * item.quantity}</span>
+              <span>₹{(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
         </div>

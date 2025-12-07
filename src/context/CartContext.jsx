@@ -2,12 +2,12 @@ import React, { createContext, useState } from "react";
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const clearCart = () => setCart([]);
-
+  
   const [cart, setCart] = useState([]);
+  const clearCart = () => setCart([]);    // Clear the cart
   const [invoiceData, setInvoiceData] = useState(null);
 
-  const addToCart = (item) => {
+  const addToCart = (item) => {  // Add item to the cart
     setCart((prev) => {
       const exist = prev.find(
         (i) => i.name === item.name && i.weight === item.weight
@@ -15,7 +15,7 @@ export const CartProvider = ({ children }) => {
       if (exist) {
         return prev.map((i) =>
           i.name === item.name && i.weight === item.weight
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: (i.quantity || 0) + 1 }
             : i
         );
       }

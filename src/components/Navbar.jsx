@@ -8,6 +8,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     navigate("/login");
   };
 
@@ -58,7 +59,10 @@ const Navbar = () => {
                 <Link className="btn btn-outline-light" to="/register">Register</Link>
               </>
             ) : (
-              <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+              <>
+                <Link className="btn btn-outline-light" to="/profile">Profile</Link>
+                <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+              </>
             )}
 
             <button className="btn cart-green-btn" onClick={() => navigate("/cart")}>

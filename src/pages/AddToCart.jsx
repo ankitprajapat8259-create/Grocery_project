@@ -1,4 +1,5 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -6,7 +7,7 @@ import autoTable from "jspdf-autotable";
 
 
 const AddToCart = () => {
-  
+  const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, buyAll, clearCart } =
     useContext(CartContext);
 
@@ -25,11 +26,11 @@ const downloadInvoice = () => {
   // Table headers and data
   const headers = [["Item", "Qty", "Price", "Total", "Weight"]];
   const data = cart.map((item) => [
-    item.name,
-    item.quantity,
-    item.price.toFixed(2),
-    (item.quantity * item.price).toFixed(2),
-    item.weight,
+    item.name || "Unknown",
+    item.quantity || 0,
+    (item.price || 0).toFixed(2),
+    ((item.quantity || 0) * (item.price || 0)).toFixed(2),
+    item.weight || "N/A",
   ]);
 
   // AutoTable
@@ -59,6 +60,7 @@ const downloadInvoice = () => {
 ///////////////////
   const [showPopup, setShowPopup] = useState(false);
   const [successPopup, setSuccessPopup] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
 
   // Subtotal
@@ -74,20 +76,37 @@ const downloadInvoice = () => {
   const total = subtotal + gst;
 
   const handlePay = () => {
-  buyAll();
-  clearCart();
-  setShowPopup(false);
-  setSuccessPopup(true);
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    
+    if (!token) {
+      // User not logged in - show login popup
+      setShowPopup(false);
+      setShowLoginPopup(true);
+      return;
+    }
 
-  setTimeout(() => {
-    setSuccessPopup(false);
-  }, 5000);
-};
+    // User is logged in - proceed with payment
+    buyAll();
+    clearCart();
+    setShowPopup(false);
+    setSuccessPopup(true);
+  };
+
+  // Auto-hide success popup after 5 seconds
+  useEffect(() => {
+    if (successPopup) {
+      const timer = setTimeout(() => {
+        setSuccessPopup(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successPopup]);
 
 
   return (
     <div className="container">
-      <h2 className="fw-bold text-center mb-4 "style={{marginTop:'10rem'}} >🛒 Your Cart</h2>
+      <h2 className="fw-bold text-center mb-4" style={{ marginTop: '10rem' }}>🛒 Your Cart</h2>
 
       {/* CART GRID */}
       <div
@@ -103,7 +122,7 @@ const downloadInvoice = () => {
           <p className="text-center text-muted w-100">Cart is empty</p>
         ) : (
           cart.map((item, index) => (
-            <div key={index} className="card shadow" style={{ width: "280px" }}>
+            <div key={`${item.name}-${item.weight}-${index}`} className="card shadow" style={{ width: "280px" }}>
               <img
                 src={item.image || item.img}
                 className="card-img-top"
@@ -114,7 +133,7 @@ const downloadInvoice = () => {
               <div className="card-body">
                 <h5 className="card-title">{item.name}</h5>
                 <p className="text-muted">{item.weight}</p>
-                <p>₹{item.price}</p>
+                <p>₹{item.price.toFixed(2)}</p>
 
                 {/* Quantity Controls */}
                 <div className="d-flex align-items-center gap-3">
@@ -150,7 +169,7 @@ const downloadInvoice = () => {
                 </div>
 
                 <p className="mt-2 fw-bold">
-                  Total: ₹{item.price * item.quantity}
+                  Total: ₹{(item.price * item.quantity).toFixed(2)}
                 </p>
 
                 {/* REMOVE BUTTON */}
@@ -235,7 +254,7 @@ const downloadInvoice = () => {
                   }}
                 >
                   <img
-                    src={item.img}
+                    src={item.img || item.image}
                     alt={item.name}
                     style={{
                       width: "60px",
@@ -249,10 +268,10 @@ const downloadInvoice = () => {
                     <p className="fw-bold m-0">{item.name}</p>
                     <p className="m-0">{item.weight}</p>
                     <p className="m-0">
-                      Rate: ₹{item.price} × Qty: {item.quantity}
+                      Rate: ₹{item.price.toFixed(2)} × Qty: {item.quantity}
                     </p>
                     <p className="fw-bold m-0">
-                      Total: ₹{item.price * item.quantity}
+                      Total: ₹{(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -261,7 +280,7 @@ const downloadInvoice = () => {
               <hr />
 
               {/* TOTALS */}
-              <p>Subtotal: ₹{subtotal}</p>
+              <p>Subtotal: ₹{subtotal.toFixed(2)}</p>
               <p>GST (5%): ₹{gst.toFixed(2)}</p>
 
               <h5 className="fw-bold">Grand Total: ₹{total.toFixed(2)}</h5>
@@ -284,24 +303,99 @@ const downloadInvoice = () => {
         </div>
       )}
       {/* ===================== POPUP END ===================== */}
-    {successPopup && (
-  <div
-    style={{
-      position: "fixed",
-      top: "20px",
-      right: "20px",
-      background: "#28a745",
-      color: "white",
-      padding: "15px 20px",
-      borderRadius: "10px",
-      zIndex: 99999,
-      fontSize: "18px",
-      boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-    }}
-  >
-    ✔️ Order Successfully Placed!
-  </div>
-)}
+
+      {/* LOGIN REQUIRED POPUP */}
+      {showLoginPopup && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 99999,
+          }}
+        >
+          <div
+            className="bg-white p-4 rounded shadow"
+            style={{
+              width: "400px",
+              position: "relative",
+              textAlign: "center",
+            }}
+          >
+            {/* CLOSE BUTTON */}
+            <button
+              onClick={() => setShowLoginPopup(false)}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                border: "none",
+                background: "transparent",
+                fontSize: "22px",
+                cursor: "pointer",
+              }}
+            >
+              ✖
+            </button>
+
+            <div className="mb-3">
+              <div
+                style={{
+                  fontSize: "4rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                🔒
+              </div>
+              <h4 className="fw-bold">Login Required</h4>
+              <p className="text-muted">
+                Please login first to proceed with payment.
+              </p>
+            </div>
+
+            <div className="d-grid gap-2">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowLoginPopup(false);
+                  navigate("/login");
+                }}
+              >
+                Go to Login
+              </button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setShowLoginPopup(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUCCESS POPUP */}
+      {successPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            background: "#28a745",
+            color: "white",
+            padding: "15px 20px",
+            borderRadius: "10px",
+            zIndex: 99999,
+            fontSize: "18px",
+            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
+          }}
+        >
+          ✔️ Order Successfully Placed!
+        </div>
+      )}
 
     </div>
   );

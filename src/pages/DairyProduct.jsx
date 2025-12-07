@@ -24,7 +24,7 @@ const DairyProduct = () => {
           "500g": 0.5,
           "1kg": 1,
           "2kg": 2
-        }[weight];
+        }[weight] || 1; // Default to 1 if weight is invalid
 
         return { ...item, weight, price: item.basePrice * multiplier };
       })
@@ -56,7 +56,7 @@ const DairyProduct = () => {
 
               <div className="card-body">
                 <h5>{item.name}</h5>
-                <p className="fw-bold">₹ {item.price}</p>
+                <p className="fw-bold">₹ {item.price.toFixed(2)}</p>
 
                 <select
                   className="form-control mb-2"
