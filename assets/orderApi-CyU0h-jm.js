@@ -1,0 +1,1 @@
+import{b as r}from"./index-CLwij9iA.js";const s={createOrder:()=>r.post("/orders/create/"),getOrders:()=>r.get("/orders/"),getOrderById:e=>r.get(`/orders/${e}/`),getAllOrders:()=>r.get("/orders/admin/all/"),updateOrderStatus:(e,t)=>r.patch(`/orders/admin/${e}/status/`,t)};export{s as o};

@@ -1,0 +1,1 @@
+import{b as a}from"./index-CLwij9iA.js";const e={getDashboardStats:()=>a.get("/admin/dashboard/"),getAllUsers:()=>a.get("/admin/users/"),toggleUserStatus:s=>a.patch(`/admin/users/${s}/toggle-status/`)};export{e as a};
