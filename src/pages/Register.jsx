@@ -1,62 +1,70 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";  // <-- Import Axios
+import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
-  const [name, setName] = useState("");
+  const { register } = useAuth();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); // Optional: to show loading state
-  const [error, setError] = useState(""); // Optional: to show error messages
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const registerUser = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
-    const response = await axios.post(
-      "http://127.0.0.1:8000/api/register/",
-      {
-        username: name,   // <-- change here
-        email,
-        password,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    alert("User Registered Successfully!");
-    navigate("/login");
-  } catch (err) {
-    if (err.response) {
-      setError(err.response.data?.message || JSON.stringify(err.response.data));
-    } else if (err.request) {
-      setError("No response from server. Check backend server.");
-    } else {
-      setError(err.message);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
     }
-  } finally {
+
+    const result = await register({
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      password,
+      password2: confirmPassword,
+      mobile_number: mobile,
+    });
+
+    if (result.success) {
+      alert("User Registered Successfully!");
+      navigate("/login");
+    } else {
+      setError(result.error || "Registration failed");
+    }
+
     setLoading(false);
-  }
-};
+  };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: "450px" }}>
+    <div className="container pt-5 mt-5" style={{ maxWidth: "450px" }}>
       <h2 className="text-center">Register</h2>
 
       <form onSubmit={registerUser}>
         <input
           type="text"
           className="form-control mb-3"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="First Name"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          required
+        />
+
+        <input
+          type="text"
+          className="form-control mb-3"
+          placeholder="Last Name"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
           required
         />
 
@@ -75,6 +83,24 @@ const Register = () => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          className="form-control mb-3"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
+
+        <input
+          type="text"
+          className="form-control mb-3"
+          placeholder="Mobile"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
           required
         />
 

@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
+import { orderApi } from "../services/orderApi";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -28,8 +29,8 @@ const downloadInvoice = () => {
   const data = cart.map((item) => [
     item.name || "Unknown",
     item.quantity || 0,
-    (item.price || 0).toFixed(2),
-    ((item.quantity || 0) * (item.price || 0)).toFixed(2),
+    parseFloat(item.price || item.product_price || 0).toFixed(2),
+    ((item.quantity || 0) * parseFloat(item.price || item.product_price || 0)).toFixed(2),
     item.weight || "N/A",
   ]);
 
@@ -65,7 +66,7 @@ const downloadInvoice = () => {
 
   // Subtotal
   const subtotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (parseFloat(item.price || item.product_price) * item.quantity),
     0
   );
 
@@ -75,9 +76,9 @@ const downloadInvoice = () => {
   // Final Total
   const total = subtotal + gst;
 
-  const handlePay = () => {
+  const handlePay = async () => {
     // Check if user is logged in
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("access_token");
     
     if (!token) {
       // User not logged in - show login popup
@@ -86,11 +87,22 @@ const downloadInvoice = () => {
       return;
     }
 
-    // User is logged in - proceed with payment
-    buyAll();
-    clearCart();
-    setShowPopup(false);
-    setSuccessPopup(true);
+    // User is logged in - proceed with payment and order creation
+    try {
+      // Create order using backend API
+      const response = await orderApi.createOrder();
+      console.log("Order created successfully:", response.data);
+      
+      // Clear cart and show success
+      clearCart();
+      setShowPopup(false);
+      setSuccessPopup(true);
+    } catch (err) {
+      console.error("Failed to create order:", err);
+      console.error("Error response:", err.response?.data);
+      const errorMessage = err.response?.data?.error || err.response?.data?.detail || "Failed to create order. Please try again.";
+      alert(errorMessage);
+    }
   };
 
   // Auto-hide success popup after 5 seconds
@@ -134,7 +146,7 @@ const downloadInvoice = () => {
               <div className="card-body">
                 <h5 className="card-title">{item.name}</h5>
                 <p className="text-muted">{item.weight}</p>
-                <p>₹{item.price.toFixed(2)}</p>
+                <p>₹{parseFloat(item.price || item.product_price).toFixed(2)}</p>
 
                 {/* Quantity Controls */}
                 <div className="d-flex align-items-center gap-3">
@@ -142,8 +154,7 @@ const downloadInvoice = () => {
                     className="btn btn-dark"
                     onClick={() =>
                       updateQuantity(
-                        item.name,
-                        item.weight,
+                        item.id || item.cart_id,
                         item.quantity + 1
                       )
                     }
@@ -158,8 +169,7 @@ const downloadInvoice = () => {
                     onClick={() => {
                       if (item.quantity > 1) {
                         updateQuantity(
-                          item.name,
-                          item.weight,
+                          item.id || item.cart_id,
                           item.quantity - 1
                         );
                       }
@@ -177,7 +187,7 @@ const downloadInvoice = () => {
                 <button
                   className="btn btn-danger w-100"
                   onClick={() =>
-                    removeFromCart(item.name, item.weight)
+                    removeFromCart(item.id || item.cart_id)
                   }
                 >
                   Remove
@@ -269,10 +279,10 @@ const downloadInvoice = () => {
                     <p className="fw-bold m-0">{item.name}</p>
                     <p className="m-0">{item.weight}</p>
                     <p className="m-0">
-                      Rate: ₹{item.price.toFixed(2)} × Qty: {item.quantity}
+                      Rate: ₹{parseFloat(item.price || item.product_price).toFixed(2)} × Qty: {item.quantity}
                     </p>
                     <p className="fw-bold m-0">
-                      Total: ₹{(item.price * item.quantity).toFixed(2)}
+                      Total: ₹{(parseFloat(item.price || item.product_price) * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>

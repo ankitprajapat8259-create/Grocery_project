@@ -1,16 +1,54 @@
-# React + Vite
+# Grocery Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React frontend for the Grocery application.
 
-Currently, two official plugins are available:
+## Setup Instructions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-## React Compiler
+### 2. Configure Environment Variables
+Create a `.env` file in the root directory:
+```
+VITE_API_BASE_URL=http://localhost:8000/api
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+For production, update the API base URL to your deployed backend URL.
 
-## Expanding the ESLint configuration
+### 3. Run Development Server
+```bash
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The application will be available at `http://localhost:5173`
+
+## Features
+
+- **User Authentication**: Register, login, logout, forgot password
+- **Product Browsing**: Browse products by category
+- **Shopping Cart**: Add, update, remove items from cart
+- **Order Management**: Place orders, view order history, track order status
+- **User Profile**: Update profile, delete account
+- **Admin Dashboard**: Manage products, categories, orders, and users
+
+## Deployment
+
+### Vercel
+1. Push this repository to GitHub
+2. Connect to Vercel
+3. Configure environment variable `VITE_API_BASE_URL` to your backend URL
+4. Deploy
+
+The `vercel.json` file is included for deployment configuration.
+
+## Backend
+
+The backend API is a separate repository. Make sure the backend is running and accessible before using this frontend.
+
+Backend repository should be deployed separately (e.g., on Render, Railway, or similar platform).
+
+## Environment Variables
+
+- `VITE_API_BASE_URL`: Base URL for the backend API (default: `http://localhost:8000/api`)

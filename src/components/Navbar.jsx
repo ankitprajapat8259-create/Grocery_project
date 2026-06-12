@@ -1,14 +1,29 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { categoryApi } from "../services/categoryApi";
 
 const Navbar = () => {
   const { cart } = useContext(CartContext);
+  const { isAuthenticated, user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryApi.getCategories();
+        setCategories(response.data || []);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
+    logout();
     navigate("/login");
   };
 
@@ -35,25 +50,19 @@ const Navbar = () => {
 
           {/* Left Links */}
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-
-            <li className="nav-item">
-              <Link className="nav-link nav-g-link" to="/">Vegetable</Link>
-            </li>
-
-            <li className="nav-item">
-              <Link className="nav-link nav-g-link" to="/dairy">Dairy Product</Link>
-            </li>
-
-            <li className="nav-item">
-              <Link className="nav-link nav-g-link" to="/fruits">Fruits</Link>
-            </li>
-
+            {categories.map((category) => (
+              <li key={category.id} className="nav-item">
+                <Link className="nav-link nav-g-link" to={`/category/${category.id}`}>
+                  {category.name}
+                </Link>
+              </li>
+            ))}
           </ul>
 
           {/* Right Buttons */}
           <div className="d-flex align-items-center gap-2">
 
-            {!localStorage.getItem("token") ? (
+            {!isAuthenticated ? (
               <>
                 <Link className="btn btn-outline-light" to="/login">Login</Link>
                 <Link className="btn btn-outline-light" to="/register">Register</Link>
@@ -61,6 +70,10 @@ const Navbar = () => {
             ) : (
               <>
                 <Link className="btn btn-outline-light" to="/profile">Profile</Link>
+                <Link className="btn btn-outline-light" to="/my-orders">My Orders</Link>
+                {isAdmin() && (
+                  <Link className="btn btn-outline-light" to="/admin/dashboard">Admin</Link>
+                )}
                 <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
               </>
             )}
